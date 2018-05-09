@@ -27,14 +27,13 @@ public abstract class BaseFragment extends Fragment {
 
     CompositeSubscription mCompositeSubscription = null;
 
-    boolean hasDataLoaded;
+    boolean hasDataLoaded = false;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         rootView = inflater.inflate(provideLayoutResId(), container, false);
         context = getActivity();
-        hasDataLoaded = false;
         doAfterRootViewInit();
         LogUtil.v("" + this.getClass());
         return rootView;
