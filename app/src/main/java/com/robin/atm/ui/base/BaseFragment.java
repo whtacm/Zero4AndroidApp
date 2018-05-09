@@ -27,11 +27,14 @@ public abstract class BaseFragment extends Fragment {
 
     CompositeSubscription mCompositeSubscription = null;
 
+    boolean hasDataLoaded;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         rootView = inflater.inflate(provideLayoutResId(), container, false);
         context = getActivity();
+        hasDataLoaded = false;
         doAfterRootViewInit();
         LogUtil.v("" + this.getClass());
         return rootView;
@@ -68,6 +71,41 @@ public abstract class BaseFragment extends Fragment {
         this.mCompositeSubscription.add(s);
     }
 
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        LogUtil.v("");
+        if (getActivity() != null) {
+            if (isVisibleToUser) {
+                doWhenUserVisible();
+                if (!hasDataLoaded) {
+                    hasDataLoaded = !hasDataLoaded;
+                    doLoadDataWhenUserVisible();
+                }
+            }else{
+                doWhenUserInvisible();
+            }
+
+        }
+    }
+
+    /**
+     * 当frgment对用户不可见时调用
+     */
+    protected void doWhenUserInvisible() {
+    }
+
+    /**
+     * 当frgment对用户可见时调用
+     */
+    protected void doWhenUserVisible() {
+    }
+
+    /**
+     * 当frgment对用户可见且没有加载过数据时调用
+     */
+    protected void doLoadDataWhenUserVisible() {
+    }
 
     @Override
     public void onDestroy() {

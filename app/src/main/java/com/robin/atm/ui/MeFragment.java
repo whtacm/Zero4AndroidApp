@@ -36,15 +36,12 @@ public class MeFragment extends ToolbarBaseFragment {
     }
 
     @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        LogUtil.v("");
-        if (getActivity() != null) {
-            if (isVisibleToUser) {
-                ((ToolbarBaseActivity) getActivity()).getSupportActionBar().hide();
-            } else {
-                ((ToolbarBaseActivity) getActivity()).getSupportActionBar().show();
-            }
-        }
-        super.setUserVisibleHint(isVisibleToUser);
+    protected void doWhenUserVisible() {
+        ((ToolbarBaseActivity) getActivity()).getSupportActionBar().hide();
+    }
+
+    @Override
+    protected void doWhenUserInvisible() {
+        ((ToolbarBaseActivity) getActivity()).getSupportActionBar().show();
     }
 }
