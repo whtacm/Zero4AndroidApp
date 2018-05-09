@@ -1,0 +1,10 @@
+<resources>
+    <!--<string name="app_name">ATM</string>-->
+
+    <string name="title_activity_main">MainActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="user_desc">TabBar这个名字相信很多学过一点IOS程序员都知道它是用来干嘛的,但本人也并非擅长开发IOS程序员,只是略懂略懂....</string>
+    <string name="user_name">Robin Wong</string>
+    <string name="topic_add">+</string>
+</resources>

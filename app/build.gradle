@@ -1,0 +1,282 @@
+apply plugin: 'com.android.application'
+//apply plugin: 'me.tatarka.retrolambda'
+
+
+def getGitRevision() {
+    return "git rev-parse --short HEAD".execute().text.trim()
+}
+
+def buildTime() {
+    return new Date().format("yyyy.MMdd.HHmm", TimeZone.getTimeZone("Asia/Shanghai")) + ""
+}
+
+def gitTagName() {
+    def cmd = 'git describe --abbrev=0 --tags'
+    return cmd.execute().text.trim()
+}
+
+def getAppName(variant) {
+    def name
+    if (variant.buildType.name.equals('debug')) {
+        switch (variant.productFlavors[0].name) {
+            case 'official':
+                name = '官方测试版'
+                break
+            case 'xiaomi':
+                name = '小米测试版'
+                break
+            case 'google':
+                name = '谷歌测试版'
+                break
+            default:
+                name = '测试版'
+                break
+        }
+    } else if (variant.buildType.name.equals('release')) {
+        switch (variant.productFlavors[0].name) {
+            case 'official':
+                name = '官方正式版'
+                break
+            case 'xiaomi':
+                name = '小米正式版'
+                break
+            case 'google':
+                name = '谷歌正式版'
+                break
+            default:
+                name = '正式版'
+                break
+        }
+    } else {
+        name = '青春版'
+    }
+
+
+    return "Zero${name}"
+}
+
+android {
+    compileSdkVersion 26
+
+    signingConfigs {
+        PK {
+            keyAlias 'alias'
+            keyPassword 'jbirobin'
+            storeFile file('../keystore')
+            storePassword 'jbirobin'
+        }
+    }
+
+    defaultConfig {
+        applicationId "com.robin.zero"
+        minSdkVersion 22
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+//        multiDexEnabled true //dex突破65535限制
+
+        javaCompileOptions {
+            // 显式声明支持注解
+            annotationProcessorOptions {
+                includeCompileClasspath true
+            }
+        }
+
+        ndk {
+            // 设置支持的SO库架构
+            abiFilters 'armeabi', 'x86', 'armeabi-v7a', 'x86_64', 'arm64-v8a'
+        }
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    buildTypes {
+        println('buildTypes')
+
+//        all { type ->
+//
+//        }
+
+        young {
+
+        }
+
+        debug {
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-Debug'
+            buildConfigField 'boolean', 'ENV_DEBUG', 'true'
+        }
+
+        release {
+            applicationIdSuffix '.release'
+            buildConfigField('boolean', 'ENV_DEBUG', 'false')
+            minifyEnabled false //启用混淆器
+            shrinkResources false
+            zipAlignEnabled false //设置为false 为了不产生unaligned的apk
+            signingConfig
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.PK
+//            applicationVariants.all { variant ->
+//                variant.outputs.each { output ->
+//                }
+//            }
+        }
+    }
+
+    buildTypes.all { type ->
+        manifestPlaceholders = [APP_ID: '1de90f78a5', app_icon: '@drawable/ic_launcher', app_icon_round: '@drawable/ic_launcher']
+        buildConfigField 'String', 'GIT_REVISION', "\"${getGitRevision()}\""
+
+        println("buildTypes.all ${type}")
+    }
+
+    //
+    applicationVariants.all { variant ->
+        println("applicationVariants.all ${variant.productFlavors[0].name} ${variant.buildType.name}")
+        // AS 3.0之后有改动，由 'variant.outputs.each'
+        // 变为 'variant.outputs.all'
+        variant.outputs.all { output -> //
+            def outputFile = output.outputFile
+            if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                def filename
+                if (variant.buildType.name.equals('debug')) {
+                    filename = "Zero_${variant.productFlavors[0].versionName}_${variant.productFlavors[0].name}_debug.apk"
+                } else {
+                    filename = "Zero_${variant.productFlavors[0].versionName}_${variant.productFlavors[0].name}_release.apk"
+                }
+                resValue 'string', 'app_name', getAppName(variant)
+//                println("applicationVariants.all ${outputFile.parent}")
+                delete outputFile.parent
+                // AS 3.0之后有改动，由 'output.outputFile=new File(outputFile.parent,filename)'
+                // 变为 'outputFileName = filename'
+                outputFileName = filename
+            }
+        }
+    }
+
+    variantFilter { variant ->
+        def names = variant.flavors*.name
+        names.each { name ->
+            println("variantFilter ${name}")
+        }
+        if (names.contains('dev') || variant.buildType.name.equals('young')) {
+            variant.ignore = true
+        }
+    }
+
+    productFlavors.all {
+        flavor ->
+            println("productFlavors.all ${flavor}")
+
+    }
+
+
+    flavorDimensions 'channel'
+
+    //
+    productFlavors {
+        println('productFlavors')
+
+//        all{
+//            flavor->
+//                println('productFlavors.all')
+//        }
+
+        dev {
+
+        }
+
+        official {
+            applicationIdSuffix '.official'
+            dimension 'channel'
+//            resValue 'string', 'app_name', 'Zero官方版'
+            versionName '1.0.0'
+            manifestPlaceholders = [//APP_ID: '1de90f78a5',
+                                    APP_Version: '1.0',
+                                    APP_Channel: 'official',
+                                    isDebug    : true
+            ]
+        }
+        xiaomi {
+            applicationIdSuffix '.xiaomi'
+            dimension 'channel'
+//            resValue 'string', 'app_name', 'Zero小米版'
+            versionName '1.0.1'
+            manifestPlaceholders = [//APP_ID: '1de90f78a5',
+                                    APP_Version: '1.1',
+                                    APP_Channel: 'xiaomi',
+                                    isDebug    : true
+            ]
+        }
+        google {
+            applicationIdSuffix '.google'
+            dimension 'channel'
+//            resValue 'string', 'app_name', 'Zero谷歌版'
+            versionName '1.0.2'
+            manifestPlaceholders = [//APP_ID: '1de90f78a5',
+                                    APP_Version: '1.2',
+                                    APP_Channel: 'google',
+                                    isDebug    : true
+            ]
+        }
+    }
+
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
+}
+
+
+afterEvaluate {
+//    println('afterEvaluate')
+//    tasks.matching {
+////        println("afterEvaluate ${it.name}")
+//        it.name.startsWith('dex')
+//    }.each { dx ->
+//        if (dx.additionalParameters == null) {
+//            dx.additionalParameters = []
+//        }
+//        dx.additionalParameters += '--multi-dex' // enable multidex
+//    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support:support-v4:26.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    //
+    implementation 'com.jakewharton:butterknife:7.0.1'
+    //
+    implementation 'io.reactivex:rxandroid:1.1.0'
+    implementation 'io.reactivex:rxjava:1.1.2'
+    implementation('com.squareup.retrofit2:retrofit:2.1.0') {
+        exclude module: 'okhttp'
+    }
+    implementation 'com.squareup.okhttp3:okhttp:3.4.2'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.4.2'
+    implementation 'com.google.code.gson:gson:2.6.2'
+    implementation 'com.squareup.retrofit2:converter-gson:2.1.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava:2.1.0'
+    //    retrolambdaConfig 'net.orfjackal.retrolambda:retrolambda:2.3.0'
+    //    implementation 'com.github.xiaoyanger0825:NiceVieoPlayer:v2.2'
+    implementation 'com.github.bumptech.glide:glide:3.7.0'
+    implementation 'com.danikula:videocache:2.7.0'
+    implementation 'com.blankj:utilcode:1.12.6'
+    implementation 'com.tencent.bugly:crashreport:2.2.0'
+    implementation 'com.tencent.bugly:nativecrashreport:3.0'
+    implementation 'com.android.support:multidex:1.0.1'
+    implementation 'org.greenrobot:eventbus:3.0.0'
+
+    implementation 'com.android.support:design:26.1.0'
+    implementation 'com.android.support:recyclerview-v7:26.1.0'
+    implementation 'com.android.support:percent:26.1.0'
+}

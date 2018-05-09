@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.robin.atm">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_LOGS" />
+
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+
+    <application
+        android:name=".App"
+        android:allowBackup="true"
+        android:icon="${app_icon}"
+        android:label="@string/app_name"
+        android:roundIcon="${app_icon_round}"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <!--<activity-->
+            <!--android:name=".ui.MainActivity"-->
+            <!--android:configChanges="orientation|keyboardHidden|screenSize"-->
+            <!--android:theme="@style/MyFullScreen">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        <!--</activity>-->
+
+         <activity
+             android:name=".ui.TabActivity"
+             android:configChanges="orientation|keyboardHidden|screenSize"
+             android:launchMode="singleTask"
+             android:screenOrientation="portrait"
+             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+             <intent-filter>
+             <action android:name="android.intent.action.MAIN" />
+
+
+             <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
+         </activity>
+
+        <service
+            android:name=".service.NetWorkService"
+            android:enabled="true"
+            android:process=":net"
+            android:exported="false" />
+
+        <!-- 配置APP ID -->
+        <meta-data
+            android:name="BUGLY_APPID"
+            android:value="${APP_ID}" />
+        <!-- 配置APP版本号 -->
+        <!-- 不同于“android:versionName”，“BUGLY_APP_VERSION”配置的是Bugly平台的APP版本号 -->
+        <meta-data
+            android:name="BUGLY_APP_VERSION"
+            android:value="${APP_Version}" />
+        <!-- 配置APP渠道号 -->
+        <meta-data
+            android:name="BUGLY_APP_CHANNEL"
+            android:value="${APP_Channel}" />
+        <!-- 配置Bugly调试模式（true或者false） -->
+        <meta-data
+            android:name="BUGLY_ENABLE_DEBUG"
+            android:value="${isDebug}" />
+
+        <service
+            android:name=".service.ExportedService"
+            android:enabled="true"
+            android:exported="true"
+            android:process=":enabled">
+            <intent-filter android:priority="99">
+                <category android:name="android.intent.category.HOME"></category>
+                <action android:name="android.intent.action.RESPOND_VIA_MESSAGE"></action>
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".ui.PermissionRequestActivity"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:theme="@style/FullscreenTranslucentTheme"></activity>
+    </application>
+
+</manifest>
